@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import sys, getopt
 import codecs
+import csv
+import copy
 
 def main(argv):
     infile = argv[0]
@@ -8,8 +10,21 @@ def main(argv):
     if not infile:
         raise Exception('please provide a text  file to parse with.')
     
-    (column_names, rows) = read_rows(infile, delimiter=",")
+    with codecs.open(infile, 'r', encoding="utf-8") as src_file:
+        stylesheet = csv.DictReader(src_file)
+        column_names = copy.deepcopy(stylesheet.fieldnames)
+        rows=[]
+        for row in stylesheet:
+            rows.append(row)
 
+    (new_column_names, new_rows) = process(column_names, rows)
+    
+    with codecs.open(outfile, 'w', encoding="utf-8") as out_file:
+        writer = csv.DictWriter(out_file, fieldnames=new_column_names)
+        writer.writeheader()
+        map(writer.writerow, new_rows)
+
+def process(column_names, rows):
     if column_names:
         column_names.append("result")
     else:
@@ -27,29 +42,7 @@ def main(argv):
             calculated_diff=float(row.get("mstOrderTotal")) - float(row.get("orderTotalSDP"))
             result = abs(calculated_diff-ord_2_total_dif.get(ord_num, float("inf")))<tolerance
         row["result"]=str(result)
-
-    write2file(outfile, column_names, rows, delimiter=",")
-
-def read_rows(fname, delimiter=","):
-    print "Loading src file {0}".format(fname)
-    rows = []
-    with codecs.open(fname, 'r', encoding="utf-8") as src_file:
-        headerline = src_file.readline()
-        column_names = map(str.strip, str(headerline).split(","))
-
-	for line in src_file:
-            rows.append(dict(zip(column_names, map(str.strip, str(line).split(delimiter)))))
-
     return (column_names, rows)
-
-def write2file(fname, column_names, rows, delimiter=","):
-    with codecs.open(fname, 'w', encoding="utf-8") as out_file:
-        out_file.write("{0}\n".format(delimiter.join(column_names)))
-	for row in rows:
-            line = []
-            for header in column_names:
-                line.append(row.get(header, ""))
-            out_file.write("{0}\n".format(delimiter.join(line)))
 
 '''
 run the program with 
