@@ -3,9 +3,6 @@ import sys
 import urllib2
 import argparse
 
-#import HTTPError
-
-
 from bs4 import BeautifulSoup
 
 def main(argv):
@@ -14,13 +11,10 @@ def main(argv):
                    help='source environment used in the diff')
 	parser.add_argument('dst_env', #metavar='dst', type=str, nargs='*',
                    help='destination environment used in the diff')
-	parser.add_argument('--print_all', dest='accumulate', action='store_const',
+	parser.add_argument('--print_all', action='store_const',
     	               const=True, default=False,
-        	           help='Print all properties')
+        	           help='Print all properties') 
 	args = parser.parse_args()
-	#print args.print_all
-	#print args.dst_env
-	#exit(0)
 
 	src_env = args.src_env
 	dst_env = args.dst_env
@@ -28,7 +22,7 @@ def main(argv):
 	src_prop = get_properties_by_url('http://{0}:{1}'.format(src_env, PROPERTY_PAGE))
 	dst_prop = get_properties_by_url('http://{0}:{1}'.format(dst_env, PROPERTY_PAGE))
 	merged_prop = merge_properties(src_prop, dst_prop)
-	print_properties_dict(merged_prop) # print_all=args.print_all)
+	print_properties_dict(merged_prop, print_all=args.print_all)
 	print "Total {0} properties found in source: {1}".format(len(src_prop), src_env)
 	print "Total {0} properties found in destination: {1}".format(len(dst_prop), dst_env)
 
@@ -39,7 +33,7 @@ def get_properties_by_url(url):
 	except HTTPError as e:
 		print "Unable to open URL {0}. error: {1}".format(url, e.strerror)
 		return {}
-	parser = BeautifulSoup(content)
+	parser = BeautifulSoup(content, "html.parser")
 	tds = [row.findAll('td') for row in parser.findAll('tr')]
 	results = { td[0].string: td[1].string for td in tds }
 	return results
