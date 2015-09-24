@@ -1,0 +1,46 @@
+#%RAML 0.8
+ 
+title: Tax Service API
+baseUri: http://example.api.com/{version}
+version: v1
+/get-tax-rate:
+  post:
+    description: |
+      Add a new song to Jukebox.
+    queryParameters:
+      ref-id:
+        description: "ref id"
+        example: 123
+        required: true
+        type: int
+      tax-return-type:
+        description: "tax return type"
+        example: TOTAL_AND_ITEM
+        required: true
+        type: string
+    body:
+      application/json:
+      schema: |
+        { "$schema": "http://json-schema.org/schema",
+          "type": "object",
+          "description": "A canonical song",
+          "properties": {
+            "title":  { "type": "string" },
+            "artist": { "type": "string" }
+          },
+          "required": [ "title", "artist" ]
+        }
+    responses:
+      200:
+        body:
+          application/json:
+            schema: |
+              { "$schema": "http://json-schema.org/schema",
+                "type": "object",
+                "description": "A canonical song",
+                "properties": {
+                  "title":  { "type": "string" },
+                  "artist": { "type": "string" }
+                },
+                "required": [ "title", "artist" ]
+              }
